@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气预报</title>
+    <link rel="stylesheet" th:href="@{/css/style.css?v=2}">
+</head>
+<body>
+<div class="container">
+    <div class="header-nav">
+        <a href="/map" class="map-link">天气地图</a>
+        <a href="/user/profile" class="profile-link">个人设置</a>
+    </div>
+    <h1>天气预报查询</h1>
+    <form action="/weather" method="get" class="search-form">
+        <input type="text" name="city" placeholder="请输入城市名称..." required>
+        <button type="submit">查询</button>
+    </form>
+</div>
+</body>
+</html>

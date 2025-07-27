@@ -1,0 +1,20 @@
+{
+  "path": "c:\\Users\\adken\\CodeBuddy\\20250726t022024\\target",
+  "desc": "Java Spring Boot Weather App - Pre-compiled JAR",
+  "id": "1dde9c2587be418ea78de76d6f3d666c",
+  "data": {
+    "spaceKey": "1dde9c2587be418ea78de76d6f3d666c",
+    "connections": {
+      "webIDE": "https://1dde9c2587be418ea78de76d6f3d666c.ap-singapore.cloudstudio.club",
+      "preview": "https://1dde9c2587be418ea78de76d6f3d666c--{port}.ap-singapore.cloudstudio.club",
+      "api": "https://1dde9c2587be418ea78de76d6f3d666c--api.ap-singapore.cloudstudio.club",
+      "pty": "https://1dde9c2587be418ea78de76d6f3d666c--pty.ap-singapore.cloudstudio.club"
+    }
+  },
+  "config": {
+    "api": "https://1dde9c2587be418ea78de76d6f3d666c--api.ap-singapore.cloudstudio.club",
+    "pty": "https://1dde9c2587be418ea78de76d6f3d666c--pty.ap-singapore.cloudstudio.club",
+    "region": "ap-shanghai",
+    "spaceKey": "1dde9c2587be418ea78de76d6f3d666c"
+  }
+}

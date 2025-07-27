@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人设置 - 天气预报</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 预警信息样式 */
+        .alert-section {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .alert-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-text {
+            color: white;
+            font-weight: 500;
+        }
+
+        .no-alerts {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        /* 城市列表样式 */
+        .city-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .city-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .city-name {
+            font-weight: 500;
+        }
+
+        .remove-city {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* 消息提示 */
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ 个人设置</h1>
+        </div>
+
+        <!-- 消息提示 -->
+        <div th:if="${message}" class="message success" th:text="${message}"></div>
+        <div th:if="${error}" class="message error" th:text="${error}"></div>
+
+        <!-- 实时天气预警 -->
+        <div class="card alert-section">
+            <h2>🚨 实时天气预警</h2>
+            <div th:if="${userProfile.recentNotifications != null and !userProfile.recentNotifications.empty}">
+                <div class="alert-item" th:each="notification : ${userProfile.recentNotifications}">
+                    <div class="alert-text" th:text="${notification}"></div>
+                </div>
+            </div>
+            <div th:if="${userProfile.recentNotifications == null or userProfile.recentNotifications.empty}" class="no-alerts">
+                暂无天气预警信息
+            </div>
+        </div>
+
+        <!-- 个人信息设置 -->
+        <div class="card">
+            <h2>👤 个人信息</h2>
+            <form th:action="@{/user/update-profile}" method="post">
+                <div class="form-group">
+                    <label for="email">邮箱地址:</label>
+                    <input type="email" id="email" name="email" th:value="${userProfile.email}" placeholder="用于接收天气预警邮件" required>
+                </div>
+                <button type="submit" class="btn btn-primary">保存信息</button>
+                <button type="submit" formaction="/user/test-email" class="btn btn-secondary">测试邮件</button>
+            </form>
+        </div>
+
+        <!-- 我的城市 -->
+        <div class="card">
+            <h2>🏙️ 我的城市</h2>
+            <div th:if="${userProfile.cities != null and !userProfile.cities.empty}">
+                <div class="city-list">
+                    <div class="city-item" th:each="city : ${userProfile.cities}">
+                        <span class="city-name" th:text="${city}"></span>
+                        <form th:action="@{/user/remove-city}" method="post" style="display: inline;">
+                            <input type="hidden" name="city" th:value="${city}">
+                            <button type="submit" class="remove-city" title="删除城市">×</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${userProfile.cities == null or userProfile.cities.empty}" class="no-alerts">
+                暂无收藏城市
+            </div>
+            
+            <form th:action="@{/user/add-city}" method="post" style="margin-top: 20px;">
+                <div class="form-group">
+                    <input type="text" name="city" placeholder="输入城市名称..." required>
+                </div>
+                <button type="submit" class="btn btn-primary">添加城市</button>
+            </form>
+        </div>
+
+        <!-- 天气提醒设置 -->
+        <!-- 天气提醒设置 -->
+        <div class="card">
+            <h2>🚨 天气提醒</h2>
+            
+            <!-- 显示已设置的提醒列表 -->
+            <div th:if="${alerts != null and !alerts.empty}" style="margin-bottom: 25px;">
+                <h3 style="color: white; font-size: 1.1rem; margin-bottom: 15px;">📋 已设置的提醒</h3>
+                <div class="alert-list">
+                    <div class="alert-item" th:each="alert : ${alerts}" style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: white;">
+                            <strong th:text="${alert.city}"></strong> - 
+                            <span th:text="${alert.condition}"></span>预警 
+                            (阈值: <span th:text="${alert.threshold}"></span>)
+                            <br>
+                            <small style="color: rgba(255,255,255,0.7);">通知方式: <span th:text="${alert.notificationType}"></span></small>
+                        </div>
+                        <form th:action="@{/user/remove-alert}" method="post" style="display: inline;">
+                            <input type="hidden" name="alertId" th:value="${alert.id}">
+                            <button type="submit" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">删除</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${alerts == null or alerts.empty}" style="margin-bottom: 25px;">
+                <p style="color: rgba(255, 255, 255, 0.7); text-align: center; padding: 15px;">暂无天气提醒设置</p>
+            </div>
+            
+            <h3 style="color: white; font-size: 1.1rem; margin-bottom: 15px;">➕ 添加新提醒</h3>
+            <form th:action="@{/user/add-alert}" method="post">
+                <div class="form-group">
+                    <label for="city">城市:</label>
+                    <input type="text" id="city" name="city" placeholder="输入城市名称" required>
+                </div>
+                <div class="form-group">
+                    <label for="condition">预警条件:</label>
+                    <select id="condition" name="condition" required>
+                        <option value="高温">高温预警</option>
+                        <option value="低温">低温预警</option>
+                        <option value="雨">降雨预警</option>
+                        <option value="雪">降雪预警</option>
+                        <option value="大风">大风预警</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="threshold">阈值:</label>
+                    <input type="text" id="threshold" name="threshold" placeholder="例如: 30 (温度) 或 10 (风速)" required>
+                </div>
+                <div class="form-group">
+                    <label for="notificationMethod">通知方式:</label>
+                    <select id="notificationMethod" name="notificationMethod" required>
+                        <option value="邮件">邮件通知</option>
+                        <option value="应用内通知">应用内通知</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">添加提醒</button>
+            </form>
+            
+            <div style="margin-top: 20px;">
+                <form th:action="@{/user/check-alerts}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-secondary">立即检查天气</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 返回首页 -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" class="btn btn-secondary">返回首页</a>
+        </div>
+    </div>
+</body>
+</html>

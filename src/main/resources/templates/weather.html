@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气详情</title>
+    <link rel="stylesheet" th:href="@{/css/style.css?v=2}">
+</head>
+<body>
+<div class="container">
+    <div class="header-links">
+        <a href="/" class="back-link">&larr; 返回首页</a>
+        <a th:href="@{/weather(city=${city}, refresh=true)}" class="refresh-link">🔄 刷新数据</a>
+        <a th:href="@{/map(city=${city})}" class="map-link">查看地图</a>
+    </div>
+    <h1><span th:text="${city}"></span> 的天气</h1>
+
+    <div th:if="${error}" class="error-message">
+        <p th:text="${error}"></p>
+    </div>
+    
+    <div th:if="${refreshed}" class="success-message">
+        <p>✅ 天气数据已刷新！显示的是最新数据。</p>
+    </div>
+
+    <div th:if="${forecast}">
+        <!-- 天气预警 -->
+        <div class="weather-warnings" th:if="${forecast.warnings != null && !forecast.warnings.empty}">
+            <h2>天气预警</h2>
+            <div class="warnings-container">
+                <div th:each="warning : ${forecast.warnings}" class="warning-card">
+                    <div class="warning-header">
+                        <span class="warning-level" th:text="${warning.level}" th:classappend="${'level-' + warning.level}"></span>
+                        <h3 th:text="${warning.title}"></h3>
+                    </div>
+                    <p class="warning-type" th:text="${warning.type}"></p>
+                    <p class="warning-content" th:text="${warning.content}"></p>
+                    <p class="warning-time">发布时间: <span th:text="${warning.pubTime}"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 当前天气 -->
+        <div class="current-weather">
+            <h2>当前天气</h2>
+            <div class="weather-card">
+                <div class="weather-icon">
+                    <img th:src="@{'/img/weather-icons/' + ${forecast.current.conditionIcon} + '.svg'}" th:alt="${forecast.current.conditionText}">
+                </div>
+                <div class="weather-details">
+                    <p><strong>温度:</strong> <span th:text="${forecast.current.tempC}"></span> &deg;C</p>
+                    <p><strong>体感温度:</strong> <span th:text="${forecast.current.feelslikeC}"></span> &deg;C</p>
+                    <p><strong>天气:</strong> <span th:text="${forecast.current.conditionText}"></span></p>
+                    <p><strong>风速:</strong> <span th:text="${forecast.current.windKph}"></span> km/h</p>
+                    <p><strong>湿度:</strong> <span th:text="${forecast.current.humidity}"></span>%</p>
+                    <p><strong>最后更新时间:</strong> <span th:text="${forecast.current.lastUpdated}"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7天预报 -->
+        <div class="forecast">
+            <h2>7天天气预报</h2>
+            <div class="forecast-container">
+                <div th:each="day : ${forecast.forecast}" class="forecast-day">
+                    <p class="forecast-date" th:text="${day.date}"></p>
+                    <img th:src="@{'/img/weather-icons/' + ${day.conditionIcon} + '.svg'}" th:alt="${day.conditionText}" class="forecast-icon">
+                    <p class="forecast-temp">
+                        <span th:text="${day.maxTempC}"></span>&deg; / <span th:text="${day.minTempC}"></span>&deg;
+                    </p>
+                    <p class="forecast-condition" th:text="${day.conditionText}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生活指数 -->
+        <div class="life-indices" th:if="${forecast.lifeIndices != null && !forecast.lifeIndices.empty}">
+            <h2>生活指数</h2>
+            <div class="indices-container">
+                <div th:each="index : ${forecast.lifeIndices}" class="index-card">
+                    <h3 th:text="${index.name}"></h3>
+                    <p class="index-value" th:text="${index.value}"></p>
+                    <p class="index-description" th:text="${index.description}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天气地图</title>
+    <link rel="stylesheet" th:href="@{/css/style.css?v=2}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .map-controls {
+            margin-bottom: 20px;
+        }
+        .layer-control {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .layer-btn {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .layer-btn.active {
+            background-color: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+        .weather-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .city-search {
+            margin-bottom: 20px;
+        }
+        .city-search form {
+            display: flex;
+            gap: 10px;
+        }
+        .city-search input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .city-search button {
+            padding: 10px 20px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="/" class="back-link">&larr; 返回首页</a>
+    <h1>天气地图</h1>
+
+    <div class="city-search">
+        <form action="/map" method="get" id="mapForm">
+            <input type="text" name="city" placeholder="输入城市名称..." th:value="${city}" required>
+            <button type="submit" id="submitBtn">查看地图</button>
+        </form>
+        <div id="loadingMessage" style="display: none; color: #1a73e8; margin-top: 10px;">
+            🔍 正在获取城市位置信息，请稍候...
+        </div>
+        <div style="background-color: #e8f5e8; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.9em;">
+        <div style="background-color: #e8f5e8; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.9em;">
+            💡 <strong>提示：</strong>支持查询中国大陆、港澳台地区的主要城市地图位置，系统会自动定位到准确坐标。
+        </div>
+    </div>
+
+    <div th:if="${error}" class="error-message">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${forecast}">
+        <div class="weather-info">
+            <h2><span th:text="${city}"></span> 当前天气</h2>
+            <p><strong>温度:</strong> <span th:text="${forecast.current.tempC}"></span> &deg;C</p>
+            <p><strong>天气:</strong> <span th:text="${forecast.current.conditionText}"></span></p>
+            <p><strong>风速:</strong> <span th:text="${forecast.current.windKph}"></span> km/h</p>
+            <p><strong>湿度:</strong> <span th:text="${forecast.current.humidity}"></span>%</p>
+        </div>
+
+        <div class="map-controls">
+            <h3>地图图层</h3>
+            <div class="layer-control">
+                <button class="layer-btn active" data-layer="base">基础地图</button>
+                <button class="layer-btn" data-layer="satellite">卫星地图</button>
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script th:inline="javascript">
+    // 表单提交时显示加载提示
+    document.getElementById('mapForm').addEventListener('submit', function() {
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').textContent = '加载中...';
+        document.getElementById('loadingMessage').style.display = 'block';
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取城市坐标
+        const city = /*[[${city}]]*/ 'Beijing';
+        const lat = /*[[${latitude}]]*/ 39.9042;
+        const lng = /*[[${longitude}]]*/ 116.4074;
+        const temp = /*[[${forecast?.current?.tempC}]]*/ '20';
+        const condition = /*[[${forecast?.current?.conditionText}]]*/ '晴';
+        
+        // 在控制台显示坐标信息，方便调试
+        console.log(`城市: ${city}, 坐标: [${lat}, ${lng}]`);
+        
+        // 初始化地图
+        const map = L.map('map').setView([lat, lng], 10);
+        
+        // 基础地图图层
+        const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // 卫星地图图层
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        });
+        
+        // 添加城市标记
+        const marker = L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(`
+                <div style="text-align: center;">
+                    <h3>${city}</h3>
+                    <p><strong>温度:</strong> ${temp}°C</p>
+                    <p><strong>天气:</strong> ${condition}</p>
+                </div>
+            `)
+            .openPopup();
+        
+        // 图层控制
+        let currentLayer = baseLayer;
+        
+        // 图层切换事件
+        document.querySelectorAll('.layer-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const layerType = this.getAttribute('data-layer');
+                
+                // 移除当前活动按钮样式
+                document.querySelectorAll('.layer-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // 添加新的活动按钮样式
+                this.classList.add('active');
+                
+                // 移除当前图层
+                if (currentLayer) {
+                    map.removeLayer(currentLayer);
+                }
+                
+                // 添加新图层
+                if (layerType === 'satellite') {
+                    currentLayer = satelliteLayer.addTo(map);
+                } else {
+                    currentLayer = baseLayer.addTo(map);
+                }
+            });
+        });
+        
+        // 添加地图点击事件，显示点击位置的信息
+        map.on('click', function(e) {
+            const lat = e.latlng.lat.toFixed(4);
+            const lng = e.latlng.lng.toFixed(4);
+            
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div style="text-align: center;">
+                        <p><strong>坐标:</strong></p>
+                        <p>纬度: ${lat}</p>
+                        <p>经度: ${lng}</p>
+                    </div>
+                `)
+                .openOn(map);
+        });
+    });
+</script>
+</body>
+</html>

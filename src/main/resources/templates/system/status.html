@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统状态监控 - 天气预报系统</title>
+    <link rel="stylesheet" th:href="@{/css/style.css?v=3}">
+    <link rel="stylesheet" th:href="@{/css/system.css?v=1}">
+</head>
+<body>
+<div class="container">
+    <div class="header-links">
+        <a href="/" class="back-link">&larr; 返回首页</a>
+        <a href="/user/profile" class="profile-link">个人设置</a>
+    </div>
+    
+    <h1>🖥️ 系统状态监控</h1>
+
+    <!-- 成功/错误消息 -->
+    <div th:if="${message}" class="success-message">
+        <p th:text="${message}"></p>
+    </div>
+    
+    <div th:if="${error}" class="error-message">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- 系统信息 -->
+    <div class="section">
+        <h2>📊 系统信息</h2>
+        <div class="info-grid">
+            <div th:each="entry : ${systemInfo}" class="info-card">
+                <h3 th:text="${entry.key}"></h3>
+                <p th:text="${entry.value}"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 内存信息 -->
+    <div class="section">
+        <h2>💾 内存使用情况</h2>
+        <div class="info-grid">
+            <div th:each="entry : ${memoryInfo}" class="info-card" 
+                 th:classappend="${entry.key == '内存使用率' ? 'memory-usage' : ''}">
+                <h3 th:text="${entry.key}"></h3>
+                <p th:text="${entry.value}"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 缓存信息 -->
+    <div class="section">
+        <h2>🗄️ 缓存状态</h2>
+        <div class="info-grid">
+            <div th:each="entry : ${cacheInfo}" class="info-card cache-card">
+                <h3 th:text="${entry.key}"></h3>
+                <p th:text="${entry.value}" class="cache-status"></p>
+            </div>
+        </div>
+        
+        <!-- 缓存管理 -->
+        <div class="cache-management">
+            <h3>缓存管理</h3>
+            <form th:action="@{/system/clear-cache}" method="post" 
+                  onsubmit="return confirm('确定要清除所有缓存吗？这将导致下次请求时重新获取数据。')">
+                <button type="submit" class="clear-cache-btn">🗑️ 清除所有缓存</button>
+            </form>
+            <p class="cache-note">
+                💡 提示：清除缓存后，下次获取天气数据时会重新从API获取最新信息，可能会稍慢一些。
+            </p>
+        </div>
+    </div>
+
+    <!-- 系统健康状态 -->
+    <div class="section">
+        <h2>💚 系统健康状态</h2>
+        <div class="health-status">
+            <div class="health-item">
+                <span class="health-indicator healthy"></span>
+                <span>天气API服务</span>
+                <span class="health-text">正常</span>
+            </div>
+            <div class="health-item">
+                <span class="health-indicator healthy"></span>
+                <span>邮件服务</span>
+                <span class="health-text">正常</span>
+            </div>
+            <div class="health-item">
+                <span class="health-indicator healthy"></span>
+                <span>缓存系统</span>
+                <span class="health-text">正常</span>
+            </div>
+            <div class="health-item">
+                <span class="health-indicator healthy"></span>
+                <span>定时任务</span>
+                <span class="health-text">正常</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作 -->
+    <div class="section">
+        <h2>⚡ 快速操作</h2>
+        <div class="quick-actions">
+            <a href="/user/profile" class="action-btn">👤 用户管理</a>
+            <a href="/map" class="action-btn">🗺️ 天气地图</a>
+            <a href="/" class="action-btn">🏠 返回首页</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// 自动刷新页面（每30秒）
+setTimeout(function() {
+    location.reload();
+}, 30000);
+
+// 显示最后更新时间
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const timeStr = now.toLocaleString('zh-CN');
+    const footer = document.createElement('div');
+    footer.className = 'last-updated';
+    footer.innerHTML = '<p>最后更新时间: ' + timeStr + ' | 页面将在30秒后自动刷新</p>';
+    document.querySelector('.container').appendChild(footer);
+});
+</script>
+</body>
+</html>
